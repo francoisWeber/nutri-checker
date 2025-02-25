@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "nutri-checker"
+version = "0.1.0"
+description = ""
+authors = ["François W <francois.weber@adevinta.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+poetry = "^2.1.1"
+ipykernel = "^6.29.5"
+xlrd = "^2.0.1"
+ruff = "^0.9.7"
+loguru = "^0.7.3"
+bm25s = {extras = ["stem"], version = ">=0.2.3"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
