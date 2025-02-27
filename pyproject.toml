@@ -13,6 +13,7 @@ xlrd = "^2.0.1"
 ruff = "^0.9.7"
 loguru = "^0.7.3"
 bm25s = {extras = ["stem"], version = ">=0.2.3"}
+pandas = "^2.2.3"
 
 
 [build-system]

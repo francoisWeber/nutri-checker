@@ -29,6 +29,8 @@ class NutriIndex:
         self.bm25 = BM25Index()
         self.bm25.index(self.nutridataset["name_fr"].values)
         
-    def retrieve(self, query: str, k=1):
-        docs, scores = self.bm25.retrieve([query], k=k)
-        return self.nutridataset.loc[docs[0]]
+    def retrieve(self, query: str | List[str], k=1):
+        if isinstance(query, str):
+            query = [query]
+        docs, scores = self.bm25.retrieve(query, k=k)
+        return self.nutridataset.loc[docs.ravel()]
