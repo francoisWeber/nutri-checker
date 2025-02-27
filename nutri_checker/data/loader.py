@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 DEFAULT_TABLE = "data/table_Ciqual_2020_FR_20200707.xls"
@@ -71,7 +72,7 @@ COLUMNS_RENAMER = {
     "Magnésium (mg/100 g)": "mg_mg",
     "Rétinol (µg/100 g)": "vit_a_ug",
     "Vitamine D (µg/100 g)": "vit_d_ug",
-    "Vitamine E (mg/100 g)": "vit_e_ug",
+    "Vitamine E (mg/100 g)": "vit_e_mg",
     "Vitamine K1 (µg/100 g)": "vit_k1_ug",
     "Vitamine K2 (µg/100 g)": "vit_k2_ug",
     "Vitamine C (mg/100 g)": "vit_c_mg",
@@ -126,7 +127,7 @@ COLUMNS_QUANTI = [
     "mg_mg",
     "vit_a_ug",
     "vit_d_ug",
-    "vit_e_ug",
+    "vit_e_mg",
     "vit_k1_ug",
     "vit_k2_ug",
     "vit_c_mg",
@@ -142,12 +143,12 @@ COLUMNS_QUANTI = [
 FINAL_COLUMNS = COLUMNS_QUALI + COLUMNS_QUANTI
 
 
-def load_nutri_data(table_path: str = DEFAULT_TABLE):
+def load_nutri_data(table_path: str = DEFAULT_TABLE, known_missing_values_path: str | None = None):
     data = pd.read_excel(table_path)
     data = columns_filter_and_rename(data)
     data = normalize_quanti_and_quali_columns(data)
     data = add_features(data)
-    data = restore_missing_information(data)
+    data = restore_missing_information(data, known_missing_values_path)
     return data.reset_index(drop=True)
 
 
@@ -174,7 +175,7 @@ def normalize_quanti_columns(df_quanti: pd.DataFrame) -> pd.DataFrame:
     df_quanti = df_quanti.map(lambda x: 0 if "<" in x else x)
     df_quanti = df_quanti.replace("Traces", 0)
     df_quanti = df_quanti.replace("traces", 0)
-    df_quanti = df_quanti.replace("-", 0)
+    df_quanti = df_quanti.replace("-", np.nan)
     df_quanti = df_quanti.astype(float)
     return df_quanti
 
@@ -186,12 +187,18 @@ def normalize_quali_columns(df_quali: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df_quali_str, df_quali_nonstr], axis=1)
 
 
-SUGAR_AVG_KCAL_PER_G = 375 / 100
+SUGAR_AVG_KCAL_PER_G = 375 / 100 # 375kcal/g
+GLUCID_AVG_KCAL_PER_G = 17 / 4.2 # 17kJ/g into kcal/g
 
-def restore_missing_information(data: pd.DataFrame) -> pd.DataFrame:
-    data = restore_missing_kcal_from_sugar(data)
+def restore_missing_information(data: pd.DataFrame, known_missing_values_path: str | None = None) -> pd.DataFrame:
+    if known_missing_values_path:
+        missing_data = pd.read_json(known_missing_values_path, orient="records", lines=True)
+        for _, row in missing_data.iterrows():
+            data.at[row['index'], row['column']] = row['value']
+    data = guess_lower_bound_kcal_for_missing_energies(data)
     return data
 
-def restore_missing_kcal_from_sugar(data: pd.DataFrame) -> pd.DataFrame:
-    data.loc[data["energy_kcal"] == 0, "energy_kcal"] = data.loc[data["energy_kcal"] == 0, "sugar_g"] * SUGAR_AVG_KCAL_PER_G
+def guess_lower_bound_kcal_for_missing_energies(data: pd.DataFrame) -> pd.DataFrame:
+    _miss = data["energy_kcal"] == 0
+    data.loc[_miss, "energy_kcal"] = data.loc[_miss, "sugar_g"] * SUGAR_AVG_KCAL_PER_G + data.loc[_miss, "glucid_g"] * GLUCID_AVG_KCAL_PER_G
     return data
