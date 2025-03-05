@@ -26,16 +26,9 @@ COLUMNS_TO_DROP = [
     "AG 20:5 5c,8c,11c,14c,17c (n-3) EPA (g/100 g)",
     "AG 22:6 4c,7c,10c,13c,16c,19c (n-3) DHA (g/100 g)",
     "Acides organiques (g/100 g)",
-    "Chlorure (mg/100 g)",
-    "Cuivre (mg/100 g)",
-    "Iode (µg/100 g)",
-    "Phosphore (mg/100 g)",
-    "Manganèse (mg/100 g)",
     "Potassium (mg/100 g)",
     "Beta-Carotène (µg/100 g)",
-    "Sélénium (µg/100 g)",
-    "Sodium (mg/100 g)",
-    "Zinc (mg/100 g)",
+    "Iode (µg/100 g)",
     "Energie, N x facteur Jones, avec fibres  (kcal/100 g)",
 ]
 COLUMNS_RENAMER = {
@@ -67,7 +60,7 @@ COLUMNS_RENAMER = {
     "AG polyinsaturés (g/100 g)": "acid_polyinsat_g",
     "Cholestérol (mg/100 g)": "cholesterol_g",
     "Sel chlorure de sodium (g/100 g)": "salt_g",
-    "Calcium (mg/100 g)": "calcium_g",
+    "Calcium (mg/100 g)": "calcium_mg",
     "Fer (mg/100 g)": "iron_mg",
     "Magnésium (mg/100 g)": "mg_mg",
     "Rétinol (µg/100 g)": "vit_a_ug",
@@ -83,6 +76,13 @@ COLUMNS_RENAMER = {
     "Vitamine B6 (mg/100 g)": "vit_b6_mg",
     "Vitamine B9 ou Folates totaux (µg/100 g)": "vit_b9_ug",
     "Vitamine B12 (µg/100 g)": "vit_b12_ug",
+    "Sodium (mg/100 g)": "sodium_mg",
+    "Phosphore (mg/100 g)": "phosphore_mg",
+    "Sélénium (µg/100 g)": "selenium_ug",
+    "Zinc (mg/100 g)": "zinc_mg",
+    "Chlorure (mg/100 g)": "chlorure_mg",
+    "Cuivre (mg/100 g)": "cu_mg",
+    "Manganèse (mg/100 g)": "mn_mg",
 }
 
 COLUMNS_STRINGS = [
@@ -122,7 +122,7 @@ COLUMNS_QUANTI = [
     "acid_polyinsat_g",
     "cholesterol_g",
     "salt_g",
-    "calcium_g",
+    "calcium_mg",
     "iron_mg",
     "mg_mg",
     "vit_a_ug",
@@ -138,6 +138,13 @@ COLUMNS_QUANTI = [
     "vit_b6_mg",
     "vit_b9_ug",
     "vit_b12_ug",
+    "sodium_mg",
+    "phosphore_mg",
+    "selenium_ug",
+    "zinc_mg",
+    "chlorure_mg",
+    "cu_mg",
+    "mn_mg",
 ]
 
 FINAL_COLUMNS = COLUMNS_QUALI + COLUMNS_QUANTI
@@ -177,6 +184,7 @@ def normalize_quanti_columns(df_quanti: pd.DataFrame) -> pd.DataFrame:
     df_quanti = df_quanti.replace("traces", 0)
     df_quanti = df_quanti.replace("-", np.nan)
     df_quanti = df_quanti.astype(float)
+    df_quanti = df_quanti / 100 # convert to g
     return df_quanti
 
 
