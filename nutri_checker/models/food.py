@@ -93,7 +93,7 @@ class Ingredient:
     def get_nutritive_spec(self) -> pd.Series:
         nutritive_unit_row = self.aliment.get_nutritive_spec()
         return pd.concat(
-            [nutritive_unit_row[COLUMNS_QUALI], nutritive_unit_row[COLUMNS_QUANTI] * 3]
+            [nutritive_unit_row[COLUMNS_QUALI], nutritive_unit_row[COLUMNS_QUANTI] * self.quantity_g]
         )
 
 
@@ -162,11 +162,12 @@ class Dish:
         return self
 
     def get_portion(self, portion_g):
+        fraction = portion_g / self.total_weight_g
         return Dish(
             self.name,
             [
                 Ingredient(
-                    ing.aliment, portion_g * ing.quantity_g / self.final_weight_g
+                    ing.aliment,  ing.quantity_g * fraction
                 )
                 for ing in self.ingredients
             ],

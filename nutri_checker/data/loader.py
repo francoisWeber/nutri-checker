@@ -184,6 +184,7 @@ def normalize_quanti_columns(df_quanti: pd.DataFrame) -> pd.DataFrame:
     df_quanti = df_quanti.replace("traces", 0)
     df_quanti = df_quanti.replace("-", np.nan)
     df_quanti = df_quanti.astype(float)
+    df_quanti = df_quanti / 100 # convert to g
     return df_quanti
 
 
