@@ -172,9 +172,7 @@ def add_features(data: pd.DataFrame) -> pd.DataFrame:
 def normalize_quanti_and_quali_columns(data: pd.DataFrame) -> pd.DataFrame:
     df_quali = data[COLUMNS_QUALI]
     df_quanti = data[COLUMNS_QUANTI]
-    return pd.concat(
-        [normalize_quali_columns(df_quali), normalize_quanti_columns(df_quanti)], axis=1
-    )
+    return pd.concat([normalize_quali_columns(df_quali), normalize_quanti_columns(df_quanti)], axis=1)
 
 
 def normalize_quanti_columns(df_quanti: pd.DataFrame) -> pd.DataFrame:
@@ -184,7 +182,7 @@ def normalize_quanti_columns(df_quanti: pd.DataFrame) -> pd.DataFrame:
     df_quanti = df_quanti.replace("traces", 0)
     df_quanti = df_quanti.replace("-", np.nan)
     df_quanti = df_quanti.astype(float)
-    df_quanti = df_quanti / 100 # convert to g
+    df_quanti = df_quanti / 100  # convert to g
     return df_quanti
 
 
@@ -195,18 +193,22 @@ def normalize_quali_columns(df_quali: pd.DataFrame) -> pd.DataFrame:
     return pd.concat([df_quali_str, df_quali_nonstr], axis=1)
 
 
-SUGAR_AVG_KCAL_PER_G = 375 / 100 # 375kcal/g
-GLUCID_AVG_KCAL_PER_G = 17 / 4.2 # 17kJ/g into kcal/g
+SUGAR_AVG_KCAL_PER_G = 375 / 100  # 375kcal/g
+GLUCID_AVG_KCAL_PER_G = 17 / 4.2  # 17kJ/g into kcal/g
+
 
 def restore_missing_information(data: pd.DataFrame, known_missing_values_path: str | None = None) -> pd.DataFrame:
     if known_missing_values_path:
         missing_data = pd.read_json(known_missing_values_path, orient="records", lines=True)
         for _, row in missing_data.iterrows():
-            data.at[row['index'], row['column']] = row['value']
+            data.at[row["index"], row["column"]] = row["value"]
     data = guess_lower_bound_kcal_for_missing_energies(data)
     return data
 
+
 def guess_lower_bound_kcal_for_missing_energies(data: pd.DataFrame) -> pd.DataFrame:
     _miss = data["energy_kcal"] == 0
-    data.loc[_miss, "energy_kcal"] = data.loc[_miss, "sugar_g"] * SUGAR_AVG_KCAL_PER_G + data.loc[_miss, "glucid_g"] * GLUCID_AVG_KCAL_PER_G
+    data.loc[_miss, "energy_kcal"] = (
+        data.loc[_miss, "sugar_g"] * SUGAR_AVG_KCAL_PER_G + data.loc[_miss, "glucid_g"] * GLUCID_AVG_KCAL_PER_G
+    )
     return data
