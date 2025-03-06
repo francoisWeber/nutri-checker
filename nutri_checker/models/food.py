@@ -72,10 +72,7 @@ class Aliment:
 
     @classmethod
     def from_name_in_nutridata(cls, name: str, nutri_index: NutriIndex):
-        if not any(
-            cook_mode in name.lower()
-            for cook_mode in ["cuit", "cuite", "cuisiné", "cuisinée"]
-        ):
+        if not any(cook_mode in name.lower() for cook_mode in ["cuit", "cuite", "cuisiné", "cuisinée"]):
             name = name + " " + "cru"
 
         aliment = nutri_index.retrieve(name, k=1).iloc[0].to_dict()
@@ -92,9 +89,7 @@ class Ingredient:
 
     def get_nutritive_spec(self) -> pd.Series:
         nutritive_unit_row = self.aliment.get_nutritive_spec()
-        return pd.concat(
-            [nutritive_unit_row[COLUMNS_QUALI], nutritive_unit_row[COLUMNS_QUANTI] * self.quantity_g]
-        )
+        return pd.concat([nutritive_unit_row[COLUMNS_QUALI], nutritive_unit_row[COLUMNS_QUANTI] * self.quantity_g])
 
 
 class IndustrialDish(Aliment):
@@ -122,9 +117,7 @@ class Dish:
     ):
         self.name = name
         self.ingredients = ingredients
-        self.total_weight_g = total_weight_g or sum(
-            ing.quantity_g for ing in ingredients
-        )
+        self.total_weight_g = total_weight_g or sum(ing.quantity_g for ing in ingredients)
         # final weight after water evaporation. Default to total weight
         self.final_weight_g = final_weight_g if final_weight_g else self.total_weight_g
 
@@ -153,9 +146,7 @@ class Dish:
         return item in self.ingredients
 
     def __add__(self, other):
-        return Dish(
-            self.name + " & " + other.name, self.ingredients + other.ingredients
-        )
+        return Dish(self.name + " & " + other.name, self.ingredients + other.ingredients)
 
     def __iadd__(self, other):
         self.ingredients += other.ingredients
@@ -165,12 +156,7 @@ class Dish:
         fraction = portion_g / self.total_weight_g
         return Dish(
             self.name,
-            [
-                Ingredient(
-                    ing.aliment,  ing.quantity_g * fraction
-                )
-                for ing in self.ingredients
-            ],
+            [Ingredient(ing.aliment, ing.quantity_g * fraction) for ing in self.ingredients],
             total_weight_g=portion_g,
         )
 

@@ -11,13 +11,14 @@ from nutri_checker.data.loader import (
 )
 from nutri_checker.search.bm25 import NutriIndex
 import altair as alt
+from pathlib import Path
+
+st.set_page_config(layout="wide")
 
 st.title("Nutri checker")
 
-NUTRIDATA_PATH = (
-    "/Users/francois.weber/code/nutri-checker/data/table_Ciqual_2020_FR_20200707.xls"
-)
-MISSING_DATA = "/Users/francois.weber/code/nutri-checker/data/missing_values.json"
+NUTRIDATA_PATH = Path(__file__).parent.parent.parent / "data" / "table_Ciqual_2020_FR_20200707.xls"
+MISSING_DATA = Path(__file__).parent.parent.parent / "data" / "missing_values.json"
 
 if "df" not in st.session_state:
     st.session_state.df = load_nutri_data(NUTRIDATA_PATH, MISSING_DATA)
@@ -42,10 +43,10 @@ if "portions" not in st.session_state:
 
 if "current_typed_alim_str" not in st.session_state:
     st.session_state.current_typed_alim_str: str = None
-    
+
+
 def suggest_aliments_from_index(input_: str) -> List[str]:
     return st.session_state.index.retrieve(input_, k=5).name_fr.tolist()
-
 
 
 def ask_for_new_ingredient():
@@ -95,13 +96,11 @@ with st.container(border=True):
         if dish_name:
             if st.button(":+1:"):
                 dish_id = 1 + len(st.session_state.dishes)
-                dish = DishWidget(
-                    dish_name, ingredients=st.session_state.current_ingredients
-                )
+                dish = DishWidget(dish_name, ingredients=st.session_state.current_ingredients)
                 st.session_state.dishes.append(dish)
                 st.session_state.current_ingredients = []
                 st.rerun()
-        
+
         columns = st.columns(len(st.session_state.current_ingredients))
         for col, ingredient in zip(columns, st.session_state.current_ingredients):
             with col:
@@ -115,14 +114,11 @@ if st.session_state.portions:
     df = pd.concat([portion.get_nutri() for portion in st.session_state.portions])
     ddf = df.groupby("name_fr")[COLUMNS_QUANTI].sum()
     ddf_pct_ajr = ddf.div(pd.Series(DAILY_RECOMMENDATION)).dropna(axis=1)
-    df_long = ddf_pct_ajr.reset_index().melt(id_vars='name_fr', var_name='Nutrient', value_name='Value')
-    chart = alt.Chart(df_long).mark_bar().encode(
-        x='Nutrient:N',
-        y='Value:Q',
-        color='name_fr:N'
-    ).properties(
-        width=600,
-        height=400
+    df_long = ddf_pct_ajr.reset_index().melt(id_vars="name_fr", var_name="Nutrient", value_name="Value")
+    chart = (
+        alt.Chart(df_long)
+        .mark_bar()
+        .encode(x="Nutrient:N", y="Value:Q", color="name_fr:N")
+        .properties(width=600, height=400)
     )
     st.altair_chart(chart, use_container_width=True)
-    
