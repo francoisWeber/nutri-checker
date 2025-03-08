@@ -1,8 +1,8 @@
 import streamlit as st
 from typing import List
 from nutri_checker.models.food import Dish
-from nutri_checker.ui import food_register, analytics
-
+from nutri_checker.ui import analytics
+from nutri_checker.ui.food_register import FoodAdder
 from nutri_checker.data.loader import (
     load_nutri_data,
 )
@@ -21,14 +21,18 @@ if "index" not in st.session_state:
     st.session_state.index = NutriIndex(st.session_state.df)
 
 if "dishes" not in st.session_state:
-    st.session_state.dishes = []
-
-if "current_dish" not in st.session_state:
-    st.session_state.current_dish = None
+    food_adder = FoodAdder()
+    st.session_state.dishes = [food_adder]
 
 if "current_ingredients" not in st.session_state:
     st.session_state.current_ingredients = []
 
+if "dish_name" not in st.session_state:
+    st.session_state.dish_name: str | None = None
+
+if "current_dish" not in st.session_state:
+    st.session_state.current_dish = None
+    
 if "ingredient_id" not in st.session_state:
     st.session_state.ingredient_id = 0
 
@@ -37,8 +41,10 @@ if "portions" not in st.session_state:
 
 if "current_typed_alim_str" not in st.session_state:
     st.session_state.current_typed_alim_str: str = None
+    
+if "food_adder" not in st.session_state:
+    st.session_state.food_adder = FoodAdder()
 
-
-food_register.render()
+st.session_state.food_adder.render()
 
 analytics.render()
