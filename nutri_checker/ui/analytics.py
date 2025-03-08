@@ -15,7 +15,7 @@ def render():
         chart = (
             alt.Chart(df_long)
             .mark_bar()
-            .encode(x="Nutrient:N", y="Value:Q", color="name_fr:N")
-            .properties(width=600, height=400)
+            .encode(y="Nutrient:N", x="Value:Q", color="name_fr:N")
+            .properties(width=600, height=800)
         )
         st.altair_chart(chart, use_container_width=True)

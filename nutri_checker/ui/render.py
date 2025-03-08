@@ -1,8 +1,9 @@
 import streamlit as st
 from typing import List
 from nutri_checker.models.food import Dish
-from nutri_checker.ui import food_register, analytics
-
+from nutri_checker.ui import widgets
+from nutri_checker.ui import analytics
+from nutri_checker.ui.food_register import FoodAdder
 from nutri_checker.data.loader import (
     load_nutri_data,
 )
@@ -23,11 +24,11 @@ if "index" not in st.session_state:
 if "dishes" not in st.session_state:
     st.session_state.dishes = []
 
-if "current_dish" not in st.session_state:
-    st.session_state.current_dish = None
-
 if "current_ingredients" not in st.session_state:
     st.session_state.current_ingredients = []
+
+if "current_dish" not in st.session_state:
+    st.session_state.current_dish = None
 
 if "ingredient_id" not in st.session_state:
     st.session_state.ingredient_id = 0
@@ -38,7 +39,24 @@ if "portions" not in st.session_state:
 if "current_typed_alim_str" not in st.session_state:
     st.session_state.current_typed_alim_str: str = None
 
+if "food_adder" not in st.session_state:
+    st.session_state.food_adder = FoodAdder()
 
-food_register.render()
+cols = st.columns(2)
+with cols[0]:
+    with st.container(border=True):
+        st.session_state.food_adder.render()
 
-analytics.render()
+    # display every registered dishes
+    for dish in st.session_state.dishes:
+        widgets.DishWidget.display(dish)
+
+
+with cols[1]:
+    with st.container(border=True):
+        analytics.render()
+
+        # display every portions
+    with st.container(border=True):
+        for portion in st.session_state.portions:
+            widgets.DishWidget.display_as_portion(portion)
