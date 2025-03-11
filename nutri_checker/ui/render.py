@@ -6,6 +6,8 @@ from nutri_checker.models.food import Aliment, Ingredient, Dish
 from nutri_checker.data.loader import COLUMNS_QUANTI
 from nutri_checker.data.ajr import DAILY_RECOMMENDATION
 
+from streamlit_option_menu import option_menu
+
 from nutri_checker.data.loader import (
     load_nutri_data,
 )
@@ -13,9 +15,24 @@ from nutri_checker.search.bm25 import NutriIndex
 import altair as alt
 from pathlib import Path
 
+from nutri_checker.ui import home
+
 st.set_page_config(layout="wide")
 
+with st.sidebar:
+    def on_change(key):
+        selection = st.session_state[key]
+        st.write(f"Selection changed to {selection}")
+        
+    selected2 = option_menu(None, ["Home", "Upload", "Tasks", 'Settings'], 
+        icons=['house', 'cloud-upload', "list-task", 'gear'], 
+        menu_icon="cast", default_index=0, orientation="vertical", on_change=on_change, key="menu")
+
+
 st.title("Nutri checker")
+if st.session_state["menu"] == "Home":
+    home.render()
+    
 
 NUTRIDATA_PATH = Path(__file__).parent.parent.parent / "data" / "table_Ciqual_2020_FR_20200707.xls"
 MISSING_DATA = Path(__file__).parent.parent.parent / "data" / "missing_values.json"

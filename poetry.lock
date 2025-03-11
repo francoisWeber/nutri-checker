@@ -3569,6 +3569,20 @@ jinja2 = "*"
 streamlit = ">=1.2"
 
 [[package]]
+name = "streamlit-option-menu"
+version = "0.4.0"
+description = "streamlit-option-menu is a simple Streamlit component that allows users to select a single item from a list of options in a menu."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit-option-menu-0.4.0.tar.gz", hash = "sha256:48ec69d59e547fa2fa4bfae001620df8af56a80de2f765ddbb9fcbfb84017129"},
+    {file = "streamlit_option_menu-0.4.0-py3-none-any.whl", hash = "sha256:a55fc7554047b6db371595af2182e435b8a2c715ee6124e8543685bd4670b07e"},
+]
+
+[package.dependencies]
+streamlit = ">=1.36"
+
+[[package]]
 name = "streamlit-searchbox"
 version = "0.1.20"
 description = "Autocomplete Searchbox"
@@ -4072,4 +4086,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "49d423711e2a868e31b8f61abb70338460f3f920a77268601a72b83f4eadcb94"
+content-hash = "db3d14af784c680d016c76cf9acd1cbd35550be71cfd90ebb2a1c4e565ea6c1b"
