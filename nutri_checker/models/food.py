@@ -3,6 +3,8 @@ from loguru import logger
 import pandas as pd
 from nutri_checker.data.loader import COLUMNS_QUANTI, COLUMNS_QUALI
 from nutri_checker.search.bm25 import NutriIndex
+from uuid import uuid4
+from typing import List
 
 
 @dataclass
@@ -65,6 +67,7 @@ class Aliment:
     def __post_init__(self):
         if not self.raw_food:
             logger.warning(f"Aliment {self.name_fr} is not raw food")
+        self._id = str(uuid4())
 
     @classmethod
     def from_row(cls, row):
@@ -87,39 +90,30 @@ class Ingredient:
     aliment: Aliment
     quantity_g: float
 
+    def __post_init__(self):
+        self._id = str(uuid4())
+
     def get_nutritive_spec(self) -> pd.Series:
         nutritive_unit_row = self.aliment.get_nutritive_spec()
         return pd.concat([nutritive_unit_row[COLUMNS_QUALI], nutritive_unit_row[COLUMNS_QUANTI] * self.quantity_g])
 
 
-class IndustrialDish(Aliment):
-    def __post_init__(self):
-        pass
-
-    def set_nutritive_spec(self, nutritive_details_from_package: dict) -> None:
-        for key, value in nutritive_details_from_package.items():
-            if not hasattr(self, key):
-                logger.warning(f"Nutritive detail {key} not found in Aliment")
-                continue
-            setattr(self, key, value)
-
-
-from typing import List
-
 
 class Dish:
-    def __init__(
-        self,
-        name,
-        ingredients: List[Ingredient],
-        total_weight_g=None,
-        final_weight_g=None,
-    ):
+    def __init__(self, name: str | None = None, ingredients: List[Ingredient] = [], total_weight_g: int | None = None, already_taken_g: int=0):
         self.name = name
         self.ingredients = ingredients
-        self.total_weight_g = total_weight_g or sum(ing.quantity_g for ing in ingredients)
-        # final weight after water evaporation. Default to total weight
-        self.final_weight_g = final_weight_g if final_weight_g else self.total_weight_g
+        self.total_weight_g = total_weight_g
+        self.already_taken_g = already_taken_g
+
+        self._id = str(uuid4())
+
+    def get_total_weight_g(self):
+        return self.total_weight_g if self.total_weight_g else sum(ing.quantity_g for ing in self.ingredients)
+
+    @property
+    def final_weight_g(self):
+        return self.get_total_weight_g()
 
     def __str__(self):
         return f"{self.name} ({len(self.ingredients)} ingredients)"
@@ -127,33 +121,8 @@ class Dish:
     def __repr__(self):
         return f"{self.name} ({len(self.ingredients)} ingredients)"
 
-    def __len__(self):
-        return len(self.ingredients)
-
-    def __iter__(self):
-        return iter(self.ingredients)
-
-    def __getitem__(self, idx):
-        return self.ingredients[idx]
-
-    def __setitem__(self, idx, value):
-        self.ingredients[idx] = value
-
-    def __delitem__(self, idx):
-        del self.ingredients[idx]
-
-    def __contains__(self, item):
-        return item in self.ingredients
-
-    def __add__(self, other):
-        return Dish(self.name + " & " + other.name, self.ingredients + other.ingredients)
-
-    def __iadd__(self, other):
-        self.ingredients += other.ingredients
-        return self
-
     def get_portion(self, portion_g):
-        fraction = portion_g / self.total_weight_g
+        fraction = portion_g / self.get_total_weight_g()
         return Dish(
             self.name,
             [Ingredient(ing.aliment, ing.quantity_g * fraction) for ing in self.ingredients],
