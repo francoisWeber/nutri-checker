@@ -20,7 +20,7 @@ DAILY_NUTRIMENT_RECOMMENDATION = {
     "phosphore_mg": 700,
     "selenium_µg": 55,
     "zinc_mg": 10,
-    "chlorure_mg": 800,
+    "chlorure_mg": 6000,
     "cu_mg": 1,
     "mn_mg": 2,
 }
