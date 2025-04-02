@@ -1,6 +1,7 @@
 from dataclasses import dataclass, asdict
 from loguru import logger
 import pandas as pd
+from nutri_checker.data.ajr import DAILY_RECOMMENDATION
 from nutri_checker.data.loader import COLUMNS_QUANTI, COLUMNS_QUALI
 from nutri_checker.search.bm25 import NutriIndex
 from uuid import uuid4
@@ -131,3 +132,32 @@ class Dish:
 
     def get_nutri(self):
         return pd.DataFrame(data=[ing.get_nutritive_spec() for ing in self.ingredients])
+    
+    
+class NutriRecap:
+    def __init__(self, dishes: Dish | List[Dish] | None=None):
+        if isinstance(dishes, Dish):
+            dishes = [dishes]
+        self.dishes = dishes
+        
+    def get_nutri(self):
+        return pd.concat([dish.get_nutri() for dish in self.dishes])
+
+    def get_nutri_summary_by_alim(self):
+        return self.get_nutri().groupby("name_fr")[COLUMNS_QUANTI].sum()
+
+    def get_nutri_summary_by_alim_in_ajr_pct(self):
+        return self.get_nutri_summary_by_alim().div(pd.Series(DAILY_RECOMMENDATION)).dropna(axis=1)
+
+    def get_nutri_summary_in_ajr_pct(self):
+        return self.get_nutri_summary_by_alim_in_ajr_pct().sum(axis=0)
+    
+    def get_nutri_needs_in_ajr_pct(self):
+        inputs_ajr_pct = self.get_nutri_summary_in_ajr_pct()
+        needs_ajr_pct = 1 - inputs_ajr_pct.clip(upper=1.0)
+        return needs_ajr_pct
+    
+    def get_nutri_needs_profile(self):
+        """Profile of the daily need in order to search for a complimentary aliment"""
+        needs_ajr_pct = self.get_nutri_needs_in_ajr_pct()
+        return needs_ajr_pct / needs_ajr_pct.max()
